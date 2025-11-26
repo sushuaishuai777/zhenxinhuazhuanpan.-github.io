@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真心话转盘</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+            padding: 2vw;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        .title {
+            font-size: 6vw;
+            font-weight: bold;
+            color: #333;
+            margin: 3vw 0;
+        }
+
+        .question-display {
+            font-size: 4.5vw;
+            color: #555;
+            text-align: center;
+            margin-bottom: 4vw;
+            min-height: 12vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 95vw;
+            padding: 0 2vw;
+            transition: all 0.2s ease;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 90vw;
+            height: 90vw;
+            max-width: 500px;
+            max-height: 500px;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .wheel-piece {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            background-color: var(--color);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -2vw;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 3vw solid transparent;
+            border-right: 3vw solid transparent;
+            border-bottom: 5vw solid #ff4d4f;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .center-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20vw;
+            height: 20vw;
+            max-width: 120px;
+            max-height: 120px;
+            border-radius: 50%;
+            background-color: #28a745;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6vw;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+            z-index: 10;
+            transition: all 0.1s ease;
+        }
+
+        .center-btn:active {
+            transform: translate(-50%, -50%) scale(0.95);
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">真心话大挑战！</div>
+    <div class="question-display" id="questionDisplay">点击中间按钮开始抽取</div>
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <div class="wheel" id="wheel"></div>
+        <div class="center-btn" id="centerBtn">转</div>
+    </div>
+
+    <script>
+        const questions = [
+                "你高中时对我的第一印象是什么？现在有没有改观？",
+                "你高中最喜欢的老师是谁？现在还会想起他/她的口头禅吗？",
+                "你高中时最头疼的一门学科是什么？现在会不会觉得其实不难？",
+                "你高中时做过最搞笑的一件事是什么？现在想起来还会笑吗？",
+                "你高中时有没有偷偷给同学起过外号？最经典的是哪个？",
+                "你高中时最喜欢的课间活动是什么？补觉、聊八卦还是刷题？",
+                "你高中时有没有暗恋过同班同学？可以只说'有'或'没有'～",
+                "你高中时最想做但没做成的事是什么？现在还有机会实现吗？",
+                "你大学这两年，有没有偶尔想起高中的校园生活？最想回到哪个瞬间？",
+                "你高中时觉得我最有意思的一个习惯是什么？现在还保留着吗？",
+                "你高中时和同学一起做过最疯狂的事是什么？比如逃课去看球赛？",
+                "你高中时的梦想是什么？现在有没有变？",
+                "你这次和我见面，有没有觉得'哇，你居然变这样了'的瞬间？",
+                "你高中时最爱的一首歌是什么？现在还会单曲循环吗？",
+                "你高中时的座位周围，印象最深的同学是谁？现在还有联系吗？",
+                "你高中时最讨厌的班规是什么？比如不准带零食、上课不能喝水？",
+                "你高中时有没有写过情书或收到过情书？可以只说'有'或'没有'～",
+                "你高中时和我有没有发生过特别难忘的小事？比如一起被罚站、借笔记？",
+                "你高中时最要好的朋友是谁？现在还经常联系吗？",
+                "你这次重逢，最期待和我聊高中的哪段回忆？",
+                "你最受不了的生活小习惯是什么？比如别人吧唧嘴、乱扔垃圾？",
+                "你平时休息时，最喜欢做的事是什么？追剧、看书、逛街还是打游戏？",
+                "你平时喜欢喝奶茶还是咖啡？喜欢什么口味？",
+                "你最讨厌的天气是什么？下雨、暴晒还是刮风？",
+                "你晚上一般几点睡觉？有没有熬夜的习惯？",
+                "你喜欢小动物吗？最想养的宠物是什么？",
+                "你平时追剧/看电影，最喜欢的类型是什么？喜剧、悬疑、爱情还是科幻？",
+                "你喜欢旅行吗？最想去的地方是什么？",
+                "你最爱的水果是什么？有没有不喜欢吃的水果？",
+                "你周末一般怎么安排？是宅着还是出门？",
+                "你觉得感情里（友情/爱情），最让你有安全感的是什么？",
+                "你最想收到的'意外惊喜'是什么？比如突然收到喜欢的零食、被记得生日？",
+                "你大学期间有没有偷偷哭过后又自愈的经历？不用细说原因～",
+                "你面对喜欢的人，会主动找话题还是假装不在意？",
+                "你有没有过'为了坚持一件事，拒绝了朋友的邀约'？",
+                "你最牵挂的非家人是朋友、老师还是其他？",
+                "你有没有过'暗恋一个人很久，但对方不知道'的经历？",
+                "你和朋友吵架后，一般多久会和好？",
+                "你生日时如果没人记得，会有点难过还是觉得无所谓？",
+                "你有没有过'帮朋友保守秘密，一直没说出去'的经历？",
+                "你睡觉前会不会习惯性刷某类视频或听某首歌？",
+                "你觉得感情里，'新鲜感'和'稳定感'哪个更重要？",
+                "你有没有过'鼓起勇气表白（友情/爱情相关），结果还不错'的经历？",
+                "你最受不了别人对你的哪种'敷衍'？比如回复'哦''随便'？",
+                "你觉得自己是'容易动情'还是'很难心动'的人？",
+                "你有没有过'想放弃某段关系，但又舍不得'的纠结？",
+                "你和谁闹矛盾会最委屈？比如最好的朋友、在意的人？",
+                "你平时喜欢把开心的事分享给别人，还是自己偷偷开心？",
+                "你有没有过'突然想起某个人，然后主动发了消息'？",
+                "你觉得这次重逢，最让你意外的是什么？",
+                "你大学期间有没有被人暗恋过？是后来才知道的吗？",
+                "你觉得'真诚'和'分寸感'在感情里哪个更重要？",
+                "你有没有过'为了朋友，熬夜帮他/她解决问题'的经历？",
+                "你最害怕的'感情遗憾'是什么？比如错过、渐行渐远？",
+                "你有没有过'偷偷为某个人准备小礼物'的经历？",
+                "你觉得'喜欢'和'好感'的区别是什么？",
+                "你有没有过'因为某个人的鼓励，才敢去做某件事'？",
+                "你和朋友相处，最不喜欢哪种'越界'行为？比如随便翻手机、打探隐私？",
+                "你有没有过'错过和朋友见面的机会，一直觉得可惜'？",
+                "你觉得'距离'会让感情变淡吗？为什么？",
+                "你有没有过'被朋友的某个细节感动到'？比如记得你不吃辣、主动帮你解围？",
+                "你面对在意的人，会直接表达关心还是默默关注？",
+                "你有没有过'觉得自己很孤独，但又不想主动联系别人'的时刻？",
+                "你觉得感情里，'道歉'和'原谅'哪个更难？",
+                "你有没有过'为了某件事努力很久，最后虽然没成但不后悔'的经历？",
+                "你有没有过'和朋友约定一起做某件事，最后只有你坚持下来了'？",
+                "你觉得'时间'能治愈感情里的伤害吗？",
+                "你有没有过'因为一个小细节，对某个人的好感度飙升'？",
+                "你和在意的人意见不合时，会选择争论还是妥协？",
+                "你觉得这次见面后，你对我的印象有没有刷新？",
+                "你有没有过'偷偷关注某个人的动态，但没让他/她知道'？",
+                "你觉得'友情'和'爱情'最大的区别是什么？",
+                "你有没有过'被朋友欺骗过'？之后怎么处理的？",
+                "你最想拥有的'感情状态'是什么？比如彼此惦记、随时能聊天？",
+                "你有没有过'为了某个人，改变自己的小习惯'？",
+                "你有没有过'突然很想联系高中同学，但又不知道说什么'？",
+                "你觉得'喜欢一个人'最明显的表现是什么？",
+                "你有没有过'因为害羞，错过了和某个人搭话的机会'？",
+                "你和朋友相处，最看重的是'三观一致'还是'兴趣相投'？",
+                "你有没有过'觉得自己做得不好，向朋友道歉'的经历？",
+                "你最害怕的'社交场景'是什么？比如陌生人聚会、当众发言？",
+                "你觉得感情里，'主动'和'被动'哪个更容易受伤？",
+                "你有没有过'为了某件喜欢的事，不顾别人反对'的经历？",
+                "你有没有过'收到朋友的礼物，觉得特别走心'？是什么礼物？",
+                "你觉得'暗恋'和'明恋'哪个更让人煎熬？",
+                "你有没有过'和朋友因为误会闹掰，后来又和好'的经历？",
+                "你最想和在意的人一起做什么事？比如一起旅行、看一场演唱会？",
+                "你有没有过'觉得自己很幸运，能遇到某个好朋友'？",
+                "你觉得'感情里的信任'是天生的还是慢慢建立的？",
+                "你有没有过'因为某首歌，想起某个人或某件事'？",
+                "你面对喜欢的人，会紧张到说不出话吗？",
+                "你有没有过'为了朋友，放弃自己的计划'？",
+                "你最不喜欢感情里的哪种'套路'？比如忽冷忽热、试探？",
+                "你有没有过'偷偷练习某件事，想在某个人面前表现好一点'？",
+                "你觉得'友情'需要经常联系才能维持吗？",
+                "你有没有过'被某个人的一句话伤到，但又没说出来'？",
+                "你觉得'喜欢'会随着时间变淡吗？",
+                "你有没有过'和朋友一起熬夜聊天，聊到天亮'的经历？",
+                "你最想尝试的'感情互动'是什么？比如一起打卡美食、互相推荐电影？",
+                "你有没有过'因为某个人，开始喜欢上某样东西'？",
+                "你觉得'感情里的平等'是什么样的？",
+                "你有没有过'觉得自己不够好，配不上某段感情'的自卑时刻？",
+                "你有没有过'帮朋友出头，解决麻烦'的经历？",
+                "你最害怕失去的'感情'是什么？比如最好的友情、刚萌芽的好感？",
+                "你有没有过'因为某件事，对某个人的印象彻底改变'？",
+                "你觉得'喜欢一个人'需要理由吗？",
+                "你希望未来我们的关系会是什么样？比如一直是好朋友、偶尔联系但不疏远？"
+            ];
+
+        // 固定颜色数组
+        function getCycleColors(count) {
+            const baseColors = [
+                '#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0',
+                '#118AB2', '#073B4C', '#EF476F'
+            ];
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                colors.push(baseColors[i % baseColors.length]);
+            }
+            return colors;
+        }
+
+        const colors = getCycleColors(questions.length);
+        const wheel = document.getElementById('wheel');
+        const questionDisplay = document.getElementById('questionDisplay');
+        const centerBtn = document.getElementById('centerBtn');
+
+        let isRotating = false;
+        let rotateTimer = null;
+        let currentRotate = 0;
+        const anglePerPiece = 360 / questions.length;
+        let questionUpdateTimer = null;
+
+        // 生成扇形 - 最兼容的方法
+        function createWheel() {
+            wheel.innerHTML = '';
+
+            questions.forEach((_, index) => {
+                const piece = document.createElement('div');
+                piece.className = 'wheel-piece';
+                piece.style.setProperty('--color', colors[index]);
+
+                // 设置旋转角度
+                const rotateAngle = index * anglePerPiece;
+                piece.style.transform = `rotate(${rotateAngle}deg) skewY(${90 - anglePerPiece}deg)`;
+
+                wheel.appendChild(piece);
+            });
+        }
+
+        // 计算当前指针指向的问题索引
+        function getCurrentQuestionIndex() {
+            const totalAngle = currentRotate % 360;
+            const pieceIndex = Math.floor(((360 - totalAngle) % 360) / anglePerPiece);
+            return pieceIndex % questions.length;
+        }
+
+        // 实时更新显示的问题
+        function updateQuestionDisplay() {
+            const currentIndex = getCurrentQuestionIndex();
+            questionDisplay.textContent = questions[currentIndex];
+        }
+
+        // 控制转盘旋转
+        function toggleRotate() {
+            if (isRotating) {
+                clearInterval(rotateTimer);
+                clearInterval(questionUpdateTimer);
+                centerBtn.textContent = "转";
+                isRotating = false;
+
+                // 停止后显示最终问题
+                setTimeout(() => {
+                    const finalIndex = getCurrentQuestionIndex();
+                    questionDisplay.textContent = questions[finalIndex];
+                    questionDisplay.style.fontWeight = 'bold';
+                    questionDisplay.style.color = '#ff4d4f';
+                }, 100);
+            } else {
+                // 重置显示样式
+                questionDisplay.style.fontWeight = 'normal';
+                questionDisplay.style.color = '#555';
+
+                const speed = 15 + Math.random() * 10;
+                rotateTimer = setInterval(() => {
+                    currentRotate += speed;
+                    wheel.style.transform = `rotate(${currentRotate}deg)`;
+                }, 30);
+                questionUpdateTimer = setInterval(updateQuestionDisplay, 100);
+                centerBtn.textContent = "停";
+                isRotating = true;
+            }
+        }
+
+        // 初始化
+        createWheel();
+        centerBtn.addEventListener('click', toggleRotate);
+    </script>
+</body>
+
+</html>
