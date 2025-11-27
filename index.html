@@ -88,7 +88,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            color: rgba(15, 15, 15, 0.5);
+            color: rgba(15, 15, 15, 0.6);
             font-weight: bold;
             /* text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); */
             pointer-events: none;
@@ -99,6 +99,7 @@
             /* 从中心向外推 */
             box-sizing: border-box;
             white-space: nowrap;
+            font-size: 1px;
         }
 
         .pointer {
@@ -131,7 +132,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4vw;
+            font-size: 6vw;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
@@ -147,7 +148,7 @@
 
         .control-btn {
             margin-top: 8vw;
-            padding: 3vw 8vw;
+            padding: 4vw 6vw;
             font-size: 5vw;
             background-color: #e4800d;
             color: white;
@@ -156,6 +157,8 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
             transition: all 0.2s ease;
+            display: grid;
+            place-items: center;
         }
 
         .control-btn:active {
